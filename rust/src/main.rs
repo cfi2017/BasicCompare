@@ -89,9 +89,9 @@ fn benchmark(opers: u32) -> time::Duration {
             let payment = account.balance.min(account.current_bill);
             account.paid_amount += payment;
             account.paid_amount >>= 2;
-            account.current_bill += account.current_bill - payment + rng.gen::<i32>() % 100;
+            account.current_bill += account.current_bill - payment + rng.gen_range(0, 100);
             account.current_bill >>= 2;
-            account.balance += rng.gen::<i32>() % 100;
+            account.balance += rng.gen_range(0, 100);
             hint::black_box(account)
         }).collect());
 
