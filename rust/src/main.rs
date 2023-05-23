@@ -1,49 +1,4 @@
-use std::{hint, time};
-use rand::{Rng, ThreadRng};
-
-//declare and initialize pieces/parts to be used
-#[derive(Debug, Copy, Clone)]
-struct Account {
-    account_id: u32,
-    current_bill: i32,
-    balance: i32,
-    paid_amount: i32,
-}
-
-impl Account {
-    fn rand(id: u32, rng: &mut ThreadRng) -> Self {
-        Self {
-            account_id: id,
-            current_bill: rng.gen_range(0, 100),
-            balance: rng.gen_range(0, 100),
-            paid_amount: rng.gen_range(0, 100)
-        }
-    }
-}
-
-struct AccountSource {
-    rng: ThreadRng,
-    max: u32,
-}
-
-impl AccountSource {
-    fn new(n: u32, rng: ThreadRng) -> Self {
-        Self {
-            rng,
-            max: n,
-        }
-    }
-}
-
-impl IntoIterator for AccountSource {
-    type Item = Account;
-    type IntoIter = Box<dyn Iterator<Item = Account>>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        Box::new((0..self.max)
-            .map(move |i| Account::rand(i, &mut self.rng.to_owned())))
-    }
-}
+use std::{hint};
 
 
 fn main() {
@@ -66,7 +21,7 @@ fn main() {
     println!("Rust performing {} operations over {} iterations.", opers, iters);
     (0..iters).for_each(|_| {
         //start timer
-        let diff = hint::black_box(benchmark(opers));
+        let diff = hint::black_box(programrust::benchmark(opers));
         if diff < min { min = diff };
         if diff > max { max = diff };
         average += diff;
@@ -75,28 +30,4 @@ fn main() {
     //print result
     println!("Done! after {:?}", total.elapsed());
     print!("\tmax: {:?}, min: {:?}, avg: {:?} nanoseconds\n\n", max.subsec_nanos(), min.subsec_nanos(), (average / iters).subsec_nanos());
-}
-
-fn benchmark(opers: u32) -> time::Duration {
-
-    let start = std::time::Instant::now();
-    //initialize psuedo random seed
-    let mut rng = rand::thread_rng();
-
-    // black box
-    let accounts: Vec<Account> = hint::black_box(AccountSource::new(opers, rng.to_owned()).into_iter()
-        .map(|mut account| {
-            let payment = account.balance.min(account.current_bill);
-            account.paid_amount += payment;
-            account.paid_amount >>= 2;
-            account.current_bill += account.current_bill - payment + rng.gen_range(0, 100);
-            account.current_bill >>= 2;
-            account.balance += rng.gen_range(0, 100);
-            hint::black_box(account)
-        }).collect());
-
-    hint::black_box(accounts);
-
-    //grab time
-    start.elapsed()
 }
