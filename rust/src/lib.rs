@@ -72,3 +72,51 @@ pub fn benchmark(ops: u32) -> time::Duration {
     //grab time
     start.elapsed()
 }
+
+pub fn benchmark_simple(ops: u32) -> time::Duration {
+    let start = std::time::Instant::now();
+
+    let _ = benchmark_simple_inner(ops);
+
+    //grab time
+    start.elapsed()
+}
+
+pub fn benchmark_simple_inner(ops: u32) -> Vec<Account> {
+
+    //initialize psuedo random seed
+    let mut rng = rand::thread_rng();
+
+    //initialize collection
+    let mut accounts = Vec::<Account>::new();
+
+    //fill collection
+    for i in 0..ops {
+        accounts.push(Account{
+            account_id : i,
+            current_bill : rng.gen::<i32>() % 100,
+            balance: rng.gen::<i32>() % 100,
+            paid_amount: rng.gen::<i32>() % 100
+        });
+    }
+
+    //process accounts for collection
+    for _ in 0..ops{
+        for account in accounts.iter_mut(){
+            let payment: i32 = if account.balance < account.current_bill
+            {account.balance}
+            else
+            {account.current_bill};
+            account.paid_amount += payment;
+            account.paid_amount >>= 2;
+            account.current_bill += account.current_bill - payment + rng.gen::<i32>() % 100;
+            account.current_bill >>= 2;
+            account.balance += rng.gen::<i32>() % 100;
+
+        }
+    }
+
+    //free collection
+    accounts.clear();
+    accounts
+}

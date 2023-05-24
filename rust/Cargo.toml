@@ -10,5 +10,5 @@ rand = "0.8.5"
 criterion = "0.4"
 
 [[bench]]
-name = "programrust"
+name = "bench"
 harness = false
